@@ -1,0 +1,7 @@
+*.sublime*
+
+*.pyd
+*.zip
+
+build/
+doc/
