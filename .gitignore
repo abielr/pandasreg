@@ -1,6 +1,7 @@
 *.sublime*
 *.c
 
+*.pyc
 *.pyd
 *.zip
 
