@@ -1,3 +1,10 @@
+""" 
+
+Shows basic usage the the package. Much of this is a kind of test to make
+sure it works with standard pandas functions. 
+
+"""
+
 from datetime import datetime
 import numpy as np
 from scipy.interpolate import interp1d
