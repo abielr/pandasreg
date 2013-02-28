@@ -13,8 +13,21 @@ class RPeriod(object):
     and compared to other periods of the same frequency.
     """
 
-    def __init__(self, value=None, freq=None, ordinal=None,
-                 year=1, month=1, day=1, hour=0, minute=0, second=0):
+    def __init__(self, value=None, freq=None, ordinal=None):
+        """
+
+        Arguments:
+
+            value (RPeriod, datetime, Timestamp, date, str): a date to be
+            converted to a period at the given frequency. Either the value or
+            ordinal must be supplied, but not both.
+
+            freq (str, RFrequency): frequency of the period
+
+            ordinal (int): an ordinal period at the given frequency. Either the
+            value or ordinal must be supplied, but not both.
+            
+        """
 
         if freq is not None:
             if isinstance(freq, basestring):
@@ -34,11 +47,6 @@ class RPeriod(object):
                 raise ValueError("Must supply freq for ordinal value")
             self.ordinal = ordinal
 
-        elif value is None:
-            if freq is None:
-                raise ValueError("If value is None, freq cannot be None")
-            self.ordinal = self.freq.to_ordinal(datetime(year, month, day, hour, minute, second))
-
         elif isinstance(value, RPeriod):
             if freq is None or value.freq == self.freq:
                 # print("HERE")
@@ -46,9 +54,9 @@ class RPeriod(object):
                 self.freq = value.freq
             else:
                 self.ordinal = value.asfreq(self.freq)
-        elif isinstance(value, datetime):
+        elif isinstance(value, (datetime, pd.Timestamp)):
             if freq is None:
-                raise ValueError("Must supply freq for datetime value")
+                raise ValueError("Must supply freq for datetime/Timestamp value")
             self.ordinal = self.freq.to_ordinal(value)
         elif isinstance(value, date):
             if freq is None:
@@ -126,16 +134,16 @@ class RPeriod(object):
 class RPeriodIndex(Int64Index):
     """
 
-    This class is very similar to Pandas' PeriodIndex and the initalization
+    This class is based on pandas' PeriodIndex and the initalization
     arguments are almost the same. The one additional argument is `observed`.
 
-    Args:
-        data: a list of datetime objects or datetime strings
+    Arguments:
+        data: a list of datetimes, Timestamps, or datetime strings
 
         ordinal: a list of ordinal periods that can be provided instead of the
         data argument.
 
-        freq: a frequency string or RFrequency object
+        freq (str, RFrequency): frequency of the index
 
         start: starting period
 
@@ -147,7 +155,7 @@ class RPeriodIndex(Int64Index):
 
         observed: this option controls how a Series or DataFrame will be
         resampled if the user does not provide an explicit method. Options can
-        be any of those that are provided to the pandas resample function
+        be any of those that are provided to the pandas resample function.
 
     """
 
@@ -226,6 +234,11 @@ class RPeriodIndex(Int64Index):
         return data
 
     def asfreq(self, freq, how='E', overlap=True):
+        """Convert the periods in the index to another frequency.
+
+        See the RFrequency.asfreq() documention for more information
+        """
+
         if isinstance(freq, basestring):
             freq = RFrequency.init(freq)
         if freq.freqstr == self.freq.freqstr:
@@ -236,6 +249,8 @@ class RPeriodIndex(Int64Index):
 
     @property
     def freqstr(self):
+        """String representation of the index's frequency"""
+
         return self.freq.freqstr
 
     def __contains__(self, key):

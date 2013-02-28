@@ -45,8 +45,19 @@ def _agg_last(x):
     return x[ix[-1]]
 
 def resample(input, freq, how=None):
-    """
-    Resample (convert) a time series to another frequency.
+    """Resample (convert) a time series to another frequency.
+
+    This function is conceptually similar to the resample() method that pandas
+    provides for Series and DataFrames. It is designed to work with a Series or
+    DataFrame that uses an instance of RPeriodIndex. Behavior slightly different
+    than the pandas function, and there are fewer arguments that can be set.
+
+    Arguments:
+
+        freq (str, RFrequency): Frequency to convert to.
+
+        how: a string, which can be 'mean', 'sum', 'first', 'last', 'min',
+        'max', or a function.
 
     """
 
@@ -174,12 +185,16 @@ def overlay(series, replace=True):
 
 def extend(input, extender, direction="forward", extender_type="index"):
     """
-    Extend a series forward and/or backward using another series or an array.
+    Extend a series forward or backward using another series or an array.
 
     Arguments:
-        direction: forward, backward
-        extender_type: index, pc, pca, diff. If type = pc or pca, the percent
-            changes should be in decimal form, i.e. 4% = .04
+
+        direction (str): 'forward', 'backward'
+
+        extender_type (str): 'index', 'pc' (percent change), 'pca' (percent
+        change, annualized), or 'diff'. If type = pc or pca, the percent changes
+        should be in decimal form, i.e. 4% = .04
+
     """
 
     # TODO make this makes nicely with DataFrame

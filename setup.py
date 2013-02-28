@@ -22,7 +22,7 @@ setup(
 	url='http://www.github.com/abielr/pandasreg',
 	license='LICENSE.txt',
 	description='Pandas extensions for regularly-spaced time series',
-	long_description=open('README.txt').read(),
+	long_description=open('README.rst').read(),
 	install_requires=[
 		"pandas >= 0.10.1"
 	],

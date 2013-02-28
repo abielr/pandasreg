@@ -53,12 +53,22 @@ aliases = {
 }
 
 cdef class RFrequency(object):
+    """
+
+    The RFrequency class maps date/time values to ordinal periods at a given
+    frequency, and can transform a period at one frequency to a period at
+    another frequency.
+
+    """
+
     cdef int64_t stride
     cdef int64_t anchor
     cdef double _periodicity
     cdef _freqstr
 
     def __init__(self, int64_t stride, int64_t anchor, double periodicity, object freqstr):
+        """Do not call this directly; use init() instead"""
+
         if stride < 1:
             raise ValueError("Stride must be >= 1")
         if periodicity <=0:
@@ -71,9 +81,34 @@ cdef class RFrequency(object):
 
     @classmethod
     def init(cls, alias, int64_t stride=1, object anchor=None, double periodicity=-1):
+        """
+
+        Use this function to create a new frequency object.
+
+        Arguments:
+            alias (str): The frequency string, such as 'A', 'M', or 'D'
+
+            stride (int): The number of periods at the base frequency between
+            consecutive observations. For example, setting alias='M' and
+            stride=3 creates an observation every 3 months.
+
+            anchor (int, datetime, Timestamp): force the strided observations to
+            pass through the given point. For example, a frequency with
+            observations every three months could pass through Jan 2000, Feb
+            2000, or Mar 2000. Setting datetime(2000,2,1) would force it to pass
+            through Feb 2000.
+
+            periodicity (double): The number of observations per year for the
+            frequency. If not specified, the 
+
+        Returns:
+            An instance of a class inheriting from RFrequency
+
+        """
+
         if isinstance(anchor, (datetime, pd.Timestamp)):
-            freq = RFrequency.init(alias, stride)
-            anchor = freq.to_ordinal(anchor)
+            freq = RFrequency.init(alias)
+            anchor = RFrequency.init(alias).to_ordinal(anchor)
         elif not com.is_integer(anchor) and not anchor is None:
             raise ValueError("Anchor must be an integer, datetime, or Timestamp")
 
@@ -81,8 +116,7 @@ cdef class RFrequency(object):
             _class, _stride, _anchor, _periodicity = aliases[alias]
             _stride = _stride*stride
             if not anchor is None:
-                raise NotImplementedError("Custom anchor not yet implemented")
-                _anchor = _anchor
+                _anchor = anchor
             if periodicity == -1 and stride > 1:
                 _periodicity /= stride
             elif periodicity != -1:
@@ -105,21 +139,25 @@ cdef class RFrequency(object):
         """
         Convert a period at one frequency to a period of another frequency
 
-        Args:
-            ordinal : Ordinal value
+        Arguments:
+            ordinal (int): Ordinal value
 
-            freq: Frequency to convert to
+            freq (str, RFrequency): Frequency to convert to
 
-            how: 'S' (start) or 'E' (end)
+            how (str): 'S' (start) or 'E' (end). Only relevant when converting
+            from a lower to higher frequency. Determines whether the period
+            returned is at the start or the end of the lower-frequency window.
 
-            overlap: When disaggregating, should the higher-frequency window 
-            be allowed to extend outside the lower-frequency window
+            overlap (bool): Only relevant when converting from a lower to higher
+            frequency. Determines the higher-frequency window be allowed to
+            extend beyond the end of the lower-frequency window. For example,
+            when converting from monthly to weekly, should the week be the last
+            week fully contained in the month, or the last week starting in the
+            month (but possibly extending into the next month).
 
         Returns:
-        An ordinal at the new frequency
+            An ordinal at the new frequency
         """
-
-        # TODO overlap=False doesn't seem to work properly, for instance M->D
 
         if isinstance(freq, basestring):
             freq = RFrequency.init(freq)
@@ -155,6 +193,8 @@ cdef class RFrequency(object):
         return new_ordinal
 
     def np_asfreq(self, np.ndarray[int64_t, ndim=1] ordinal, freq, how='E', overlap=True):
+        """Same as asfreq(), but accepts and returns a numpy array of ordinals"""
+
         cdef int i
         cdef np.ndarray[int64_t, ndim=1] result = np.empty((len(ordinal),), dtype=np.int64)
 
@@ -194,7 +234,9 @@ cdef class RFrequency(object):
         return self._periodicity
 
     def format(self, val):
-        if not isinstance(val, datetime):
+        """Return a formatted string for the period"""
+
+        if not isinstance(val, (datetime,pd.Timestamp)):
             val = self.to_timestamp(val)
         output = "%04d-%02d-%02d %02d:%02d:%02d" % (val.year, val.month, val.day, 
             val.hour, val.minute, val.second)
@@ -204,6 +246,8 @@ cdef class RFrequency(object):
         return hash((self.group, self.stride, self.anchor, self.periodicity))
 
 cdef class RFrequencyM(RFrequency):
+    """Monthly base frequency"""
+
     group = 0
 
     def _to_ordinal(self, dt):
@@ -222,6 +266,8 @@ cdef class RFrequencyM(RFrequency):
         return output
 
 cdef class RFrequencyTM(RFrequency):
+    """Twice monthly base frequency"""
+
     group = 1
 
     def _to_ordinal(self, dt):
@@ -243,6 +289,8 @@ cdef class RFrequencyTM(RFrequency):
         return pd.Timestamp(datetime(year, month, day))
 
 cdef class RFrequencyB(RFrequency):
+    """Business daily (Mon-Fri) base frequency"""
+
     group = 2
 
     def _to_ordinal(self, dt):
@@ -257,6 +305,8 @@ cdef class RFrequencyB(RFrequency):
         return pd.Timestamp(((ordinal-wday+3)/5*7+wday-3)*DAYNANO)
 
 cdef class RFrequencyNS(RFrequency):
+    """Nanosecond base frequency"""
+
     group = 4
 
     def _to_ordinal(self, dt):
