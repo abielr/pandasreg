@@ -2,6 +2,7 @@ import numpy as np
 from datetime import datetime, date
 import dateutil.parser
 from pandas.tseries.index import Int64Index, Index
+import pandas as pd
 import pandas.core.common as com
 import pandas._algos as _algos
 from pandas.tseries.tools import parse_time_string
@@ -26,7 +27,7 @@ class RPeriod(object):
 
             ordinal (int): an ordinal period at the given frequency. Either the
             value or ordinal must be supplied, but not both.
-            
+
         """
 
         if freq is not None:

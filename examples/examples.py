@@ -208,7 +208,8 @@ s1.interpolate()					# Linear interpolation
 ix = RPeriodIndex(start=datetime(1990,1,1), periods=120, freq="M")
 s1 = pd.Series(np.arange(1,121), ix)
 
-pdr.x12(s1)
+# To run this, you must have X-12 installed and provide its location
+# pdr.x12(s1, [EXECUTABLE PATH], [TMP DIR PATH])
 
 ############################################
 # REGRESSIONS
