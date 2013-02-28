@@ -159,6 +159,9 @@ cdef class RFrequency(object):
             An ordinal at the new frequency
         """
 
+        # TODO: there should be a way to convert between frequencies of the same
+        # group without having to convert to a datetime in the process.
+
         if isinstance(freq, basestring):
             freq = RFrequency.init(freq)
         elif not isinstance(freq, RFrequency):
