@@ -119,8 +119,12 @@ class RPeriod(object):
         return RPeriod(ordinal=self.freq.asfreq(self.ordinal, freq, how, 
             overlap), freq=freq)
 
-    def to_timestamp(self, freq=None, how='start'):
+    def to_timestamp(self):
+        # TODO: support freq, how option
         return self.freq.to_timestamp(self.ordinal)
+
+    def to_datetime(self, freq=None):
+        return self.to_timestamp().to_pydatetime()
 
     def __repr__(self):
         return self.freq.to_timestamp(self.ordinal)
