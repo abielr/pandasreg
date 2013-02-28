@@ -52,7 +52,7 @@ def pcy(series, n=1):
 
 def pcya(series, n=1):
     """Percent change over n years, annualized"""
-    return ((series/series.shift(n*series.index.freq.periodicity))**(1.0/n)-1)*100,
+    return ((series/series.shift(n*series.index.freq.periodicity))**(1.0/n)-1)*100
 
 def x12(series, executable, tmpdir):
     """Run US Census Bureau's X-12 ARIMA on a function
